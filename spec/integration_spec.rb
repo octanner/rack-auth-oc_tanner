@@ -25,7 +25,7 @@ describe Rack::Auth::OCTanner do
       map "/" do
         use Rack::Auth::OCTanner, client_id: ENV['OAUTH_ID'], client_secret: ENV['OAUTH_SECRET'], site: ENV['OAUTH_SITE']
         run lambda { |env| 
-          if env['oauth2_token_data']
+          if env['octanner_auth_user']
             [200, { 'Content-Type' => 'text/plain' },'OK']
           else
             [500, { 'Content-Type' => 'text/plain' }, 'OAUTH2_TOKEN_DATA is nil']
