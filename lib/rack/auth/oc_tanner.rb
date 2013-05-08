@@ -36,7 +36,7 @@ module Rack
 
       # TODO: refactor out
       def token_string_from_request
-        token_string_from_params(request.params) || token_string_from_headers(request.env)
+        token_string_from_params || token_string_from_headers
       end
 
       private
@@ -45,14 +45,14 @@ module Rack
         @request ||= Rack::Request.new @env
       end
 
-      def token_string_from_params(params = {})
-        params['access_token']
+      def token_string_from_params
+        request.params['access_token']
       end
 
-      def token_string_from_headers(headers = {})
-        headers['HTTP_AUTHORIZATION'] &&
-        !headers['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
-        headers['HTTP_AUTHORIZATION'][/^(Token) (token=)?([^\s]*)$/, 3]
+      def token_string_from_headers
+        request.env['HTTP_AUTHORIZATION'] &&
+        !request.env['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
+        request.env['HTTP_AUTHORIZATION'][/^(Token) (token=)?([^\s]*)$/, 3]
       end
 
       def user_resource_url
