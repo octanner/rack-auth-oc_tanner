@@ -22,19 +22,22 @@ module Rack
       end
 
       def auth_client
-        access_token = OAuth2::AccessToken.new oauth2_client, token
+        @auth_client ||= OAuth2::AccessToken.new oauth2_client, token
       end
 
       # Presently, this does a call out to the OAuth2 provider to validate
       # and retrieve user information.  In the future, this information may be
       # encoded into the token itself.
       def auth_user
-        response = auth_client.get user_resource_url
-        JSON.parse response.body
+        unless @auth_user
+          response = auth_client.get user_resource_url
+          @auth_user = JSON.parse response.body
+        end
+        @auth_user
       end
 
       def token
-        token_string_from_params || token_string_from_headers
+        token_from_params || token_from_headers
       end
 
       private
@@ -43,11 +46,11 @@ module Rack
         @request ||= Rack::Request.new @env
       end
 
-      def token_string_from_params
+      def token_from_params
         request.params['access_token']
       end
 
-      def token_string_from_headers
+      def token_from_headers
         request.env['HTTP_AUTHORIZATION'] &&
         !request.env['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
         request.env['HTTP_AUTHORIZATION'][/^(Token) (token=)?([^\s]*)$/, 3]
