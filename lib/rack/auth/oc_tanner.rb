@@ -31,7 +31,6 @@ module Rack
 
       # TODO: refactor out
       def token_string_from_request
-        return nil unless request
         token_string_from_params(request.params) || token_string_from_headers(request.env)
       end
 

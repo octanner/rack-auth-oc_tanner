@@ -50,10 +50,6 @@ describe Rack::Auth::OCTanner do
       subject.should_receive(:request).at_least(1).times { @request }
     end
 
-    # it 'returns nil if no request' do
-    #   subject.token_string_from_request(nil).should be_nil
-    # end
-
     context 'with request params' do
       it 'matches bearer_token' do
         @request.params['bearer_token'] = token_string
