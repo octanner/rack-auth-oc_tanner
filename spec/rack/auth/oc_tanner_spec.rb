@@ -15,7 +15,7 @@ describe Rack::Auth::OCTanner do
 
   subject{ middleware }
 
-  describe '#validate_token' do
+  describe '#auth_user' do
     before :each do
       @request = OpenStruct.new
       @request.params = {}
@@ -23,8 +23,9 @@ describe Rack::Auth::OCTanner do
     end
 
     it 'should validate and return a valid user response' do
-      token = double('token', get: double('response', body: user_info.to_json))
-      subject.validate_token(token).should eq user_info
+      client = double('token', get: double('response', body: user_info.to_json))
+      subject.should_receive(:auth_client) { client }
+      subject.auth_user.should eq user_info
     end
   end
 
