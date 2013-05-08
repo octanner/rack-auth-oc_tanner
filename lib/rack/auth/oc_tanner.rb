@@ -52,7 +52,7 @@ module Rack
       def token_string_from_headers(headers = {})
         headers['HTTP_AUTHORIZATION'] &&
         !headers['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
-        headers['HTTP_AUTHORIZATION'][/^(Bearer|OAuth|Token) (token=)?([^\s]*)$/, 3]
+        headers['HTTP_AUTHORIZATION'][/^(Token) (token=)?([^\s]*)$/, 3]
       end
 
       def user_resource_url

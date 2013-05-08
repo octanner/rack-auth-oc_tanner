@@ -59,16 +59,6 @@ describe Rack::Auth::OCTanner do
     end
 
     context 'with HTTP_AUTHORIZATION header' do
-      it 'matches Bearer' do
-        @request.env['HTTP_AUTHORIZATION'] = "Bearer token=#{token_string}"
-        subject.token_string_from_request.should eq token_string
-      end
-
-      it 'matches OAuth' do
-        @request.env['HTTP_AUTHORIZATION'] = "OAuth token=#{token_string}"
-        subject.token_string_from_request.should eq token_string
-      end
-
       it 'matches Token' do
         @request.env['HTTP_AUTHORIZATION'] = "Token token=#{token_string}"
         subject.token_string_from_request.should eq token_string
