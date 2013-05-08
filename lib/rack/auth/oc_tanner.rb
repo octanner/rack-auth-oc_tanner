@@ -22,8 +22,7 @@ module Rack
       end
 
       def auth_client
-        token_string = token_string_from_request
-        access_token = OAuth2::AccessToken.new oauth2_client, token_string
+        access_token = OAuth2::AccessToken.new oauth2_client, token
       end
 
       # Presently, this does a call out to the OAuth2 provider to validate
@@ -34,8 +33,7 @@ module Rack
         JSON.parse response.body
       end
 
-      # TODO: refactor out
-      def token_string_from_request
+      def token
         token_string_from_params || token_string_from_headers
       end
 

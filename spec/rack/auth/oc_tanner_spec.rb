@@ -54,14 +54,14 @@ describe Rack::Auth::OCTanner do
     context 'with request params' do
       it 'matches access_token' do
         @request.params['access_token'] = token_string
-        subject.token_string_from_request.should eq token_string
+        subject.token.should eq token_string
       end
     end
 
     context 'with HTTP_AUTHORIZATION header' do
       it 'matches Token' do
         @request.env['HTTP_AUTHORIZATION'] = "Token token=#{token_string}"
-        subject.token_string_from_request.should eq token_string
+        subject.token.should eq token_string
       end
     end
   end
