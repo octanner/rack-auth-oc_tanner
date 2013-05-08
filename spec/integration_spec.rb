@@ -3,12 +3,19 @@ require 'rack/test'
 
 # Simple integration test for middleware
 #
-# run with rspec -t api
+## Setup
 #
-# Add CLIENT_ID, CLIENT_SECRET, SITE, and TOKEN to your environment
+# The test depends on CLIENT_ID, CLIENT_SECRET, SITE, and TOKEN being in the evironment
+#
+#   $ export CLIENT_ID=your_client_id
+#   etc.
+#
 # You can obtain a token with this command just subsitute your credentials
 # curl -d "grant_type=password" -d "username=USERNAME" -d "password=PASSWORD" 'https://CLIENT_ID:CLIENT_SECRET@oc-eve-prod.herokuapp.com/oauth/token'
-
+#
+## Running the test
+#
+#   $ rspec -t api spec/integration_spec.rb
 
 describe Rack::Auth::OCTanner do
   include Rack::Test::Methods
