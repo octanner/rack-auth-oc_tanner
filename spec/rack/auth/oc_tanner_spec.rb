@@ -52,18 +52,8 @@ describe Rack::Auth::OCTanner do
     end
 
     context 'with request params' do
-      it 'matches bearer_token' do
-        @request.params['bearer_token'] = token_string
-        subject.token_string_from_request.should eq token_string
-      end
-
       it 'matches access_token' do
         @request.params['access_token'] = token_string
-        subject.token_string_from_request.should eq token_string
-      end
-
-      it 'matches oauth_token' do
-        @request.params['oauth_token'] = token_string
         subject.token_string_from_request.should eq token_string
       end
     end

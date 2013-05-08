@@ -46,9 +46,7 @@ module Rack
       end
 
       def token_string_from_params(params = {})
-        params['bearer_token'] ||
-        params['access_token'] ||
-        (params['oauth_token'] && !params['oauth_signature'] ? params['oauth_token'] : nil )
+        params['access_token']
       end
 
       def token_string_from_headers(headers = {})
