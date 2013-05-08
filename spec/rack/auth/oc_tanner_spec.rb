@@ -28,7 +28,7 @@ describe Rack::Auth::OCTanner do
     end
   end
 
-  describe '#token_from_request' do
+  describe '#auth_client' do
     before :each do
       @request = OpenStruct.new
       @request.params = {}
@@ -37,7 +37,7 @@ describe Rack::Auth::OCTanner do
     end
 
     it 'returns an OAuth2::AccessToken object' do
-      subject.token_from_request.should be_kind_of OAuth2::AccessToken
+      subject.auth_client.should be_kind_of OAuth2::AccessToken
     end
 
   end

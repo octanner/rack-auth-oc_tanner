@@ -22,7 +22,8 @@ module Rack
       end
 
       def auth_client
-        token_from_request
+        token_string = token_string_from_request
+        access_token = OAuth2::AccessToken.new oauth2_client, token_string
       end
 
       def auth_user
@@ -42,12 +43,6 @@ module Rack
       def validate_token(token)
         response = token.get user_resource_url
         JSON.parse response.body
-      end
-
-      # TODO: refactor out
-      def token_from_request
-        token_string = token_string_from_request
-        access_token = OAuth2::AccessToken.new oauth2_client, token_string
       end
 
       private
