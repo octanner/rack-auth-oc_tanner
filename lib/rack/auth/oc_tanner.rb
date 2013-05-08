@@ -1,4 +1,5 @@
 require 'oauth2'
+require 'json'
 
 module Rack
   module Auth
