@@ -1,8 +1,6 @@
 # SimpleCov reports
 coverage
 
-# Rspec configuration
-.rspec
 tmp/
 
 # MergeTool backup files
