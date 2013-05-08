@@ -10,33 +10,27 @@ module Rack
         @options = options
       end
 
-
       def call(env)
         @env = env.dup
-
         @env['octanner_auth_client'] = auth_client
         @env['octanner_auth_user'] = auth_user
         @app.call(@env)
-
-        # For now, note the error, set the token information
-        # to nil, and send the request along; upstream will handle it
       rescue StandardError => e
-        # p "Failed to authorize OAuth2:  #{e.message}"
-        # return [401, {},[]]
         env['octanner_auth_client'] = nil
         env['octanner_auth_user'] = nil
         @app.call(env)
       end
 
       def auth_client
-        token_from_request request
+        token_from_request
       end
 
       def auth_user
         validate_token auth_client
       end
 
-      def token_string_from_request(request)
+      # TODO: refactor out
+      def token_string_from_request
         return nil unless request
         token_string_from_params(request.params) || token_string_from_headers(request.env)
       end
@@ -44,13 +38,16 @@ module Rack
       # Presently, this does a call out to the OAuth2 provider to validate
       # and retrieve user information.  In the future, this information may be
       # encoded into the token itself.
+      #
+      # TODO: refactor out
       def validate_token(token)
         response = token.get user_resource_url
         JSON.parse response.body
       end
 
-      def token_from_request(request)
-        token_string = token_string_from_request request
+      # TODO: refactor out
+      def token_from_request
+        token_string = token_string_from_request
         access_token = OAuth2::AccessToken.new oauth2_client, token_string
       end
 

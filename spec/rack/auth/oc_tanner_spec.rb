@@ -13,12 +13,9 @@ describe Rack::Auth::OCTanner do
   let(:user_info_ok){ { status: 200, body: user_info.to_json } }
   let(:user_info_unauthorized){ { status: 401 } }
 
-
   subject{ middleware }
 
-
   describe '#validate_token' do
-
     before :each do
       @request = OpenStruct.new
       @request.params = {}
@@ -31,65 +28,63 @@ describe Rack::Auth::OCTanner do
     end
   end
 
-
   describe '#token_from_request' do
-
     before :each do
       @request = OpenStruct.new
       @request.params = {}
       @request.env = {}
+      subject.should_receive(:request).at_least(1).times { @request }
     end
 
     it 'returns an OAuth2::AccessToken object' do
-      subject.token_from_request(@request).should be_kind_of OAuth2::AccessToken
+      subject.token_from_request.should be_kind_of OAuth2::AccessToken
     end
 
   end
 
-
   describe '#token_string_from_request' do
-
     before :each do
       @request = OpenStruct.new
       @request.params = {}
       @request.env = {}
+      subject.should_receive(:request).at_least(1).times { @request }
     end
 
-    it 'returns nil if no request' do
-      subject.token_string_from_request(nil).should be_nil
-    end
+    # it 'returns nil if no request' do
+    #   subject.token_string_from_request(nil).should be_nil
+    # end
 
     context 'with request params' do
       it 'matches bearer_token' do
         @request.params['bearer_token'] = token_string
-        subject.token_string_from_request(@request).should eq token_string
+        subject.token_string_from_request.should eq token_string
       end
 
       it 'matches access_token' do
         @request.params['access_token'] = token_string
-        subject.token_string_from_request(@request).should eq token_string
+        subject.token_string_from_request.should eq token_string
       end
 
       it 'matches oauth_token' do
         @request.params['oauth_token'] = token_string
-        subject.token_string_from_request(@request).should eq token_string
+        subject.token_string_from_request.should eq token_string
       end
     end
 
     context 'with HTTP_AUTHORIZATION header' do
       it 'matches Bearer' do
         @request.env['HTTP_AUTHORIZATION'] = "Bearer token=#{token_string}"
-        subject.token_string_from_request(@request).should eq token_string
+        subject.token_string_from_request.should eq token_string
       end
 
       it 'matches OAuth' do
         @request.env['HTTP_AUTHORIZATION'] = "OAuth token=#{token_string}"
-        subject.token_string_from_request(@request).should eq token_string
+        subject.token_string_from_request.should eq token_string
       end
 
       it 'matches Token' do
         @request.env['HTTP_AUTHORIZATION'] = "Token token=#{token_string}"
-        subject.token_string_from_request(@request).should eq token_string
+        subject.token_string_from_request.should eq token_string
       end
     end
   end
