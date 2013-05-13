@@ -1,5 +1,3 @@
-require 'oauth2'
-
 class Rack::Auth::AuthenticationFilter
 
   def initialize(scopes = [])

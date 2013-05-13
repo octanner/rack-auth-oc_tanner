@@ -8,7 +8,7 @@ Rack module for handling OC Tanner OAuth2 tokens.
 ## Getting Started
 
 ```ruby
-gem 'rack-auth-oc_tanner', git: 'git@github.com:octanner/rack-auth-oc_tanner.git'
+gem 'rack-auth-oc_tanner', git: 'https://github.com/octanner/rack-auth-oc_tanner.git'
 ```
 
 Then run the bundle command to install it.
@@ -23,30 +23,21 @@ Add the following to your config/applications.rb file
 
 ```ruby
 class Application < Rails::Application
-  config.middleware.use Rack::Auth::OCTanner, client_id: 'some_id', client_secret: 'some_secret'
+  config.middleware.use Rack::Auth::OCTanner, key: ENV['OCT_AUTH_KEY']
 end
 ```
 
-The `client_id` and `client_secret` are the credentials used to access the OAuth2 provider service to validate tokens and retrieve user information.  These two parameters are required.
+The `OCT_AUTH_KEY` should be an environment variable set to the shared secret key used to encrypt and decrypt the authentication tokens.  This parameter is required.
 
-Other optional parameters that can be included are:
-
-`site` - the OAuth2 provider site host
-
-`authorize_url` - absolute or relative URL path to the Authorization endpoint
-
-`token_url` - absolute or relative URL path to the Token endpoint
 
 
 ### Authenticating Requests
 
-The `Rack::Auth::OCTanner` middleware will look for an OAuth2 token in the request parameters or headers, and will attempt to validate that token.  If the validation succeeds, the middleware will add two objects to the request environment:
-
-`env['oauth2_token']` - An `OAuth2::AccessToken` object, which can be used to make further requests to other protected services
+The `Rack::Auth::OCTanner` middleware will look for an OAuth2 token in the request parameters or headers, and will attempt to validate that token.  If the validation succeeds, the middleware will add the following object to the request environment:
 
 `env['oauth2_token_data']` - A `Hash` of basic information representing the user associated with the token.  This may include the user's ID, their associated company ID, and any associated OAuth2 scopes.  The actual content will depend on the configuration of the OAuth2 provider service.
 
-If the authentication fails, both of these values will be set to `nil`.
+If the authentication fails, this value will be set to `nil`.
 
 
 ### Obtaining a token through HTTP

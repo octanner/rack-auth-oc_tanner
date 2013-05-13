@@ -1,3 +1,5 @@
+require 'simple-secrets'
+
 module Rack
   module Auth
     autoload :OCTanner, 'rack/auth/oc_tanner'

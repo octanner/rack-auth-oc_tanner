@@ -1,5 +1,3 @@
-require 'oauth2'
-
 module Rack
   module Auth
     class OCTanner
@@ -12,35 +10,12 @@ module Rack
 
       def call(env)
         request = Rack::Request.new(env)
-
-        token = token_from_request request
-        env['oauth2_token_data'] = validate_token token
-        env['oauth2_token'] = token
+        token = token_string_from_request request
+        env['oauth2_token_data'] = packet.unpack token
         @app.call(env)
-
-        # For now, note the error, set the token information
-        # to nil, and send the request along; upstream will handle it
       rescue StandardError => e
-        # p "Rack::Auth::OCTanner failed to authorize:  #{e.message}"
-        # return [401, {},[]]
         env['oauth2_token_data'] = nil
-        env['oauth2_token'] = nil
         @app.call(env)
-      end
-
-
-      # Presently, this does a call out to the OAuth2 provider to validate
-      # and retrieve user information.  In the future, this information may be
-      # encoded into the token itself.
-      def validate_token(token)
-        response = token.get oauth2_client.site + '/api/userinfo'
-        JSON.parse response.body
-      end
-
-
-      def token_from_request(request)
-        token_string = token_string_from_request request
-        access_token = OAuth2::AccessToken.new oauth2_client, token_string
       end
 
 
@@ -51,7 +26,6 @@ module Rack
 
 
       private
-
 
       def token_string_from_params(params = {})
         params['bearer_token'] ||
@@ -67,13 +41,8 @@ module Rack
       end
 
 
-      def oauth2_client
-        @client ||= OAuth2::Client.new(
-          @options[:client_id],
-          @options[:client_secret],
-          { site: @options[:site] || 'https://api.octanner.com',
-            authorize_url: @options[:authorize_url] || '/dialog/authorize',
-            token_url: @options[:token_url] || '/oauth/token' })
+      def packet
+        @packet ||= SimpleSecrets::Packet.new @options[:key]
       end
     end
   end
