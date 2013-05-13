@@ -22,18 +22,15 @@ module Rack
       end
 
       def auth_client
-        @auth_client ||= OAuth2::AccessToken.new oauth2_client, token
+        @auth_client = OAuth2::AccessToken.new oauth2_client, token
       end
 
       # Presently, this does a call out to the OAuth2 provider to validate
       # and retrieve user information.  In the future, this information may be
       # encoded into the token itself.
       def auth_user
-        unless @auth_user
-          response = auth_client.get user_resource_url
-          @auth_user = JSON.parse response.body
-        end
-        @auth_user
+        response = auth_client.get user_resource_url
+        @auth_user = JSON.parse response.body
       end
 
       def token
