@@ -9,17 +9,18 @@ module Rack
       def call(env)
         @env = env.dup
         debug env: env
-        user = auth_user
-        @env['oauth2_token_data'] = user
+        token = token_from_headers || token_from_params
+        user = auth_user(token)
         @env['octanner_auth_user'] = user
+        @env['octanner_auth_token'] = token
         @app.call(@env)
       rescue StandardError => e
         STDERR.puts e
         @app.call(@env)
       end
 
-      def auth_user
-        packet.unpack (token_from_headers || token_from_params)
+      def auth_user(token)
+        packet.unpack(token)
       end
 
       private

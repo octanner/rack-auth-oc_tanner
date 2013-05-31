@@ -36,14 +36,39 @@ describe Rack::Auth::OCTanner do
 
     it 'should set env objects if authentication succeeds' do
       env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
+      subject.should_receive(:auth_user).with(token).and_return(user_info)
       response = subject.call(env)
       response[1]['octanner_auth_user'].should eq user_info
     end
 
+    it 'should set the token in the request env' do
+      env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
+      subject.should_receive(:auth_user).with(token).and_return(user_info)
+      response = subject.call(env)
+      response[1]['octanner_auth_token'].should eq token
+    end
+
     it 'should set env objects to nil if authentication fails' do
-      env = make_env
+      env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
+      subject.should_receive(:auth_user).with(token).and_return(nil)
       response = subject.call(env)
       response[1]['octanner_auth_user'].should be_nil
+    end
+
+    it "should use headers over parameters for the auth token" do
+      subject.should_receive(:token_from_headers).once.and_return(token)
+      subject.should_not_receive(:token_from_params)
+      subject.should_receive(:auth_user).with(token).and_return(nil)      
+      env = make_env
+      response = subject.call(env)
+    end
+
+    it "should use the access_token parameter if no http headers present" do
+      subject.should_receive(:token_from_headers).once.and_return(nil)
+      subject.should_receive(:token_from_params).once.and_return(token)
+      subject.should_receive(:auth_user).with(token).and_return(nil)
+      env = make_env
+      response = subject.call(env)
     end
   end
 
@@ -52,37 +77,14 @@ describe Rack::Auth::OCTanner do
       @request = OpenStruct.new
       @request.params = {}
       @request.env = {}
-      subject.should_receive(:request).at_least(1).times { @request }
     end
 
-    context 'with request params' do
-      it 'matches access_token' do
-        @request.params['access_token'] = token
-        subject.auth_user.should eq user_info
-      end
+    it 'returns an object if matches access_token' do
+      subject.auth_user(token).should eq user_info
     end
 
-    context 'with HTTP_AUTHORIZATION header' do
-      it 'matches Token' do
-        @request.env['HTTP_AUTHORIZATION'] = "Token token=#{token}"
-        subject.auth_user.should eq user_info
-      end
-    end
-
-    context 'with HTTP_AUTHORIZATION header and request params' do
-      it 'header takes precedence when invalid' do
-        @request.params['access_token'] = token
-        subject.auth_user.should eq user_info
-        @request.env['HTTP_AUTHORIZATION'] = "Token token=#{"abcdefg"}" # Invald token
-        subject.auth_user.should eq nil
-      end
-
-      it 'header takes precedence when valid' do
-        @request.params['access_token'] = "abcdefg" # Invalid token
-        subject.auth_user.should eq nil
-        @request.env['HTTP_AUTHORIZATION'] = "Token token=#{token}"
-        subject.auth_user.should eq user_info
-      end
+    it 'returns nil if nothing matches' do
+      subject.auth_user('bad1234').should eq nil
     end
   end
 end
