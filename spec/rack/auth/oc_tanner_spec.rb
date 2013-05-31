@@ -45,7 +45,7 @@ describe Rack::Auth::OCTanner do
       env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
       subject.should_receive(:auth_user).with(token).and_return(user_info)
       response = subject.call(env)
-      response[1]['octanner_auth_token'].should eq token
+      response[1]['octanner_auth_user']['token'].should eq token
     end
 
     it 'should set env objects to nil if authentication fails' do

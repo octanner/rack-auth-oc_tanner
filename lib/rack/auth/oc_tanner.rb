@@ -12,7 +12,7 @@ module Rack
         token = token_from_headers || token_from_params
         user = auth_user(token)
         @env['octanner_auth_user'] = user
-        @env['octanner_auth_token'] = token
+        @env['octanner_auth_user']['token'] = token
         @app.call(@env)
       rescue StandardError => e
         STDERR.puts e
