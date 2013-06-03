@@ -16,6 +16,7 @@ module Rack
         @app.call(@env)
       rescue StandardError => e
         STDERR.puts e
+        STDERR.puts e.backtrace[0..9].join("\n")
         @app.call(@env)
       end
 
