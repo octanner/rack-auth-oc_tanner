@@ -2,6 +2,7 @@ module Rack
   module Auth
     class OCTanner
       def initialize(app, options = {})
+        options[:debug] = true if ENV['RACK_AUTH_OCTANNER_DEBUG']
         @app = app
         @options = options
       end
@@ -11,8 +12,10 @@ module Rack
         debug env: env
         token = token_from_headers || token_from_params
         user = auth_user(token)
-        @env['octanner_auth_user'] = user
-        @env['octanner_auth_user']['token'] = token
+        if user
+          @env['octanner_auth_user'] = user
+          @env['octanner_auth_user']['token'] = token
+        end
         @app.call(@env)
       rescue StandardError => e
         STDERR.puts e
@@ -21,7 +24,10 @@ module Rack
       end
 
       def auth_user(token)
-        packet.unpack(token)
+        debug "Decrypting Token: #{token.inspect} with #{@options[:key]}"
+        data = packet.unpack(token)
+        debug "Data: #{data.inspect}"
+        data
       end
 
       private
@@ -45,7 +51,7 @@ module Rack
       end
 
       def debug(msg)
-        STDERR.puts "Rack::Auth::OCTanner #{msg.inspect}" if ENV['RACK_AUTH_OCTANNER_DEBUG']
+        STDERR.puts "Rack::Auth::OCTanner #{msg.inspect}" if @options[:debug]
       end
     end
   end
