@@ -60,17 +60,38 @@ describe Rack::Auth::OCTanner do
       subject.should_receive(:token_from_headers).once.and_return(token)
       subject.should_not_receive(:token_from_params)
       subject.should_receive(:auth_user).with(token).and_return(nil)      
-      env = make_env
-      response = subject.call(env)
+      subject.call(make_env)
     end
 
     it "should use the access_token parameter if no http headers present" do
       subject.should_receive(:token_from_headers).once.and_return(nil)
       subject.should_receive(:token_from_params).once.and_return(token)
       subject.should_receive(:auth_user).with(token).and_return(nil)
-      env = make_env
-      response = subject.call(env)
+      subject.call(make_env)
     end
+
+    it "should return nil if both token_from_headers and token_from_params are nils" do
+      subject.should_receive(:token_from_headers).once.and_return(nil)
+      subject.should_receive(:auth_user).with(nil).and_return(nil)
+      response = subject.call(make_env)
+      response[1]['octanner_auth_user'].should be_nil
+    end
+
+    it "should return nil if token_from_headers is empty" do
+      env = make_env 'HTTP_AUTHORIZATION' => "Token token="
+      subject.should_receive(:token_from_headers).once.and_return('')
+      subject.should_receive(:auth_user).with('').and_return(nil)
+      response = subject.call(env)
+      response[1]['octanner_auth_user'].should be_nil
+    end
+
+    it "should return nil if token_from_headers is empty" do
+      env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
+      subject.should_receive(:auth_user).with(token).and_throw(StandardError)
+      response = subject.call(env)
+      response[1]['octanner_auth_user'].should be_nil
+    end
+
   end
 
   describe '#auth_user' do

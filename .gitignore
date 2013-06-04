@@ -12,3 +12,8 @@ tmp/
 .DS_Store
 
 *.gem
+
+# IDEA files
+.idea/
+*.iml
+*.ipr
