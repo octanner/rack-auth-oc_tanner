@@ -1,8 +1,14 @@
+require 'logger'
+
 module Rack
   module Auth
     class OCTanner
       def initialize(app, options = {})
-        options[:debug] = true if ENV['RACK_AUTH_OCTANNER_DEBUG']
+        if ENV['RACK_AUTH_OCTANNER_DEBUG'] || !options[:log]
+          @logger = ::Logger.new(STDERR)
+        else
+          @logger = options[:log]
+        end
         @app = app
         @options = options
       end
@@ -49,8 +55,9 @@ module Rack
         @packet ||= SimpleSecrets::Packet.new @options[:key]
       end
 
+      private
       def debug(msg)
-        STDERR.puts "Rack::Auth::OCTanner #{msg.inspect}" if @options[:debug]
+        @logger.debug "Rack::Auth::OCTanner #{msg.inspect}"
       end
     end
   end

@@ -10,7 +10,8 @@ end
 
 describe Rack::Auth::OCTanner do
   let(:app) { lambda { |env| [200, env, []] }}
-  let(:options) {{ key: "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd" }}
+  let(:logger) { l = ::Logger.new(STDERR); l.level = Logger::WARN; l } # silence output
+  let(:options) {{ key: "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", log: logger }}
   let(:user_info) {{ 'person_id' => '1', 'company_id' => '2', 'application_id' => '3', 'scopes' => [ 'foo' ] }}
   let(:token) { SimpleSecrets::Packet.new(options[:key]).pack user_info }
   let(:middleware) { Rack::Auth::OCTanner.new app, options }
