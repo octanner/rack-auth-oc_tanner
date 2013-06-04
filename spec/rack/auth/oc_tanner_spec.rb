@@ -10,7 +10,7 @@ end
 
 describe Rack::Auth::OCTanner do
   let(:app) { lambda { |env| [200, env, []] }}
-  let(:logger) { l = ::Logger.new(STDERR); l.level = Logger::WARN; l } # silence output
+  let(:logger) { l = ::Logger.new(STDERR); l.level = Logger::FATAL; l } # silence output
   let(:options) {{ key: "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", log: logger }}
   let(:user_info) {{ 'person_id' => '1', 'company_id' => '2', 'application_id' => '3', 'scopes' => [ 'foo' ] }}
   let(:token) { SimpleSecrets::Packet.new(options[:key]).pack user_info }
@@ -21,6 +21,11 @@ describe Rack::Auth::OCTanner do
   describe '#initialize' do
     it 'assigns the app variable' do
       subject.instance_variable_get( :@app ).should eq app
+    end
+
+    it 'creates a new logger by default' do
+      middleware = Rack::Auth::OCTanner.new app, key: "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+      middleware.instance_variable_get(:@logger).should be_a(::Logger)
     end
 
     it 'assigns the options variable' do
@@ -87,7 +92,7 @@ describe Rack::Auth::OCTanner do
 
     it "should return nil if token_from_headers is empty" do
       env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
-      subject.should_receive(:auth_user).with(token).and_throw(StandardError)
+      subject.should_receive(:auth_user).with(token).and_raise(StandardError)
       response = subject.call(env)
       response[1]['octanner_auth_user'].should be_nil
     end

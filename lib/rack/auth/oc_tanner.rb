@@ -15,16 +15,17 @@ module Rack
 
       def call(env)
         @env = env.dup
-        token = token_from_headers || token_from_params
-        user = auth_user(token)
-        if user
-          @env['octanner_auth_user'] = user
-          @env['octanner_auth_user']['token'] = token
+        begin
+          token = token_from_headers || token_from_params
+          user = auth_user(token)
+          if user
+            @env['octanner_auth_user'] = user
+            @env['octanner_auth_user']['token'] = token
+          end
+        rescue StandardError => e
+          @logger.error e
+          @logger.error e.backtrace[0..9].join("\n")
         end
-        @app.call(@env)
-      rescue StandardError => e
-        STDERR.puts e
-        STDERR.puts e.backtrace[0..9].join("\n")
         @app.call(@env)
       end
 
