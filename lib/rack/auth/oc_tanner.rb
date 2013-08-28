@@ -33,10 +33,8 @@ module Rack
 
       def decode_token(token)
         return nil if token.nil? || token.empty?
-        debug "Decoding Token: #{token.inspect} with #{@options[:key]}"
         user = packet.unpack(token)
         user['token'] = token if user
-        debug "Decoded Token: #{user.inspect}"
         user
       end
 
