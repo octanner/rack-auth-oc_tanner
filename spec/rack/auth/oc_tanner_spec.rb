@@ -36,7 +36,7 @@ describe Rack::Auth::OCTanner do
   describe "#token_overridden?" do
     it "always returns true if ENV token set by time of first call" do
       ENV['OCTANNER_AUTH_TOKEN'] = "any_thing_not_nil"
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.token_overridden?.should eq true
       ENV['OCTANNER_AUTH_TOKEN'] = nil
       subject.token_overridden?.should eq true
@@ -44,7 +44,7 @@ describe Rack::Auth::OCTanner do
 
     it "always returns false if ENV token unset by time of first call" do
       ENV['OCTANNER_AUTH_TOKEN'] = nil
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.token_overridden?.should eq false
       ENV['OCTANNER_AUTH_TOKEN'] = "any_thing_not_nil"
       subject.token_overridden?.should eq false
@@ -60,33 +60,33 @@ describe Rack::Auth::OCTanner do
     end
 
     it 'should set env objects if authentication succeeds' do
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.should_receive(:decode_token).with(token).and_return(user_info)
       response = subject.call(env)
       response[1]['octanner_auth_user'].should eq user_info
     end
 
     it 'should set the token in the request env' do
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       response = subject.call(env)
       response[1]['octanner_auth_user']['token'].should eq token
     end
 
     it "should set use the token in the ENV if set" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.should_receive(:decode_token).with("the token")
       response = subject.call(env)
     end
 
     it "should set the ENV with token if not initially set" do
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       response = subject.call(env)
       ENV['OCTANNER_AUTH_TOKEN'].should eq token
     end
 
     it 'should set env objects to nil if authentication fails' do
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.should_receive(:decode_token).with(token).and_return(nil)
       response = subject.call(env)
       response[1]['octanner_auth_user'].should be_nil
@@ -114,7 +114,7 @@ describe Rack::Auth::OCTanner do
     end
 
     it "should return nil if token_from_headers is empty" do
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token="
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer "
       subject.should_receive(:token_from_headers).once.and_return('')
       subject.should_receive(:decode_token).with('').and_return(nil)
       response = subject.call(env)
@@ -122,23 +122,30 @@ describe Rack::Auth::OCTanner do
     end
 
     it "should return nil if token_from_headers is empty" do
-      env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.should_receive(:decode_token).with(token).and_raise(StandardError)
       response = subject.call(env)
       response[1]['octanner_auth_user'].should be_nil
     end
 
     # Deprecated; we're moving to 'Bearer' headers
-    it "should support for 'Token' headers" do
+    it "should support for 'Token token=' headers" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
       env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
       subject.should_receive(:decode_token).with("the token")
       response = subject.call(env)
     end
 
-    it "should support for 'Bearer' headers" do
+    it "should support for 'Bearer token=' headers" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
+      subject.should_receive(:decode_token).with("the token")
+      response = subject.call(env)
+    end
+
+    it "should support for 'Bearer' headers" do
+      ENV['OCTANNER_AUTH_TOKEN'] = "the token"
+      env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       subject.should_receive(:decode_token).with("the token")
       response = subject.call(env)
     end

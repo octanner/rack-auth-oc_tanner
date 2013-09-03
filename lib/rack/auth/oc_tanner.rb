@@ -59,19 +59,15 @@ module Rack
         return request.params['access_token'] if request.params['access_token']
       end
 
+      # 'Token token=' and 'Bearer token=' are deprecated; ; we're moving to just Bearer tokens
       def token_from_headers
         request.env['HTTP_AUTHORIZATION'] &&
         !request.env['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
-        request.env['HTTP_AUTHORIZATION'][/^(Bearer|Token) token=?([^\s]*)$/, 2] # 'Token' deprecated; we're moving to just Bearer tokens
+        request.env['HTTP_AUTHORIZATION'][/^(Bearer|Token) (token=)?([^\s]*)$/, 3]
       end
 
       def packet
         @packet ||= SimpleSecrets::Packet.new @options[:key]
-      end
-
-      private
-      def debug(msg)
-        @logger.debug "Rack::Auth::OCTanner #{msg.inspect}"
       end
     end
   end
