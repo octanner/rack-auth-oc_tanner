@@ -43,10 +43,10 @@ If the authentication fails, this value will be set to `nil`.
 
 ### Using Rails before_filter
 
-The `Rack::Auth::AuthenticationFilter` can be used for quick authenticaiton in Rails controllers.  Add the following to the controller:
+The `Rack::Auth::OCTanner::AuthenticationFilter` can be used for quick authenticaiton in Rails controllers.  Add the following to the controller:
 
 ```ruby
-before_filter Rack::Auth::AuthenticationFilter.new(scopes)
+before_filter Rack::Auth::OCTanner::AuthenticationFilter.new(scopes)
 ```
 
 `scopes` is an optional array of OAuth2 scopes that are required to pass the filter (i.e. 'registration', 'user_read', etc.).  The token must qualify for all the scopes in the array to pass.

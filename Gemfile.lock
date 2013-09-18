@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rack-auth-oc_tanner (0.9.7)
+    rack-auth-oc_tanner (0.9.9)
       rack
       simple-secrets (~> 1.0.0)
 
