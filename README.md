@@ -20,9 +20,17 @@ bundle install
 
 Add the following to your config/applications.rb
 
+### Rails < 4
 ```ruby
 class Application < Rails::Application
   config.middleware.use Rack::Auth::OCTanner, key: ENV['TOKEN_HEX_KEY']
+end
+```
+### Rails >= 4
+
+```ruby
+class Application < Rails::Application
+  config.middleware.use Rack::Auth::OCTanner::Token, key: ENV['TOKEN_HEX_KEY']
 end
 ```
 
