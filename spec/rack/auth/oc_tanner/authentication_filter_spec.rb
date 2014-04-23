@@ -112,7 +112,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
 
   describe "#authenticate_expires" do
     let(:token_smd){ 383 }
-    let(:token_time){ Rack::Auth::OCTanner::SmD.new.date token_smd}
+    let(:token_time){ SmD::SmD.new.date token_smd}
 
     it "returns true if token has not expired" do
       subject.authenticate_expires(token_smd, token_time - 1).should eq true
