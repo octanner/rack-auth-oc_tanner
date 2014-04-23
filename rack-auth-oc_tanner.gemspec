@@ -18,5 +18,5 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency 'rack'
   gem.add_dependency 'simple-secrets', '~> 1.0.0'
-  gem.add_development_dependency 'rspec'
+  gem.add_dependency 'smd', '~> 1.0.0'
 end
