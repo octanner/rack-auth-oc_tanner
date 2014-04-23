@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name = 'rack-auth-oc_tanner'
-  gem.version = '1.0.1'
+  gem.version = '1.0.2'
 
   gem.authors = ['Jay Wagnon']
   gem.email = ['jay.wagnon@octanner.com']
