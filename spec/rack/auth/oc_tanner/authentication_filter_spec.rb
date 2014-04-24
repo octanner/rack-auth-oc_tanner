@@ -114,10 +114,38 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
   describe "#expired?" do
     let(:token_smd){ 300 }
 
-    context "is expired" do
-      it "when no smd is given" do
-        subject.expired?(nil).should eq true
+    context "invalid inputs" do
+
+      context "smd is nil" do
+        it "is expired if token smd is nil" do
+          subject.expired?(nil).should eq true
+        end
+
+        it "is expired if test smd is nil" do
+          subject.expired?(1, nil).should eq true
+        end
       end
+
+      context "smd is out of range" do
+        it "is expired if token smd is negative" do
+          subject.expired?(-1).should eq true
+        end
+
+        it "is expired if token smd exceeds SmD range" do
+          subject.expired?(smd.range + 1).should eq true
+        end
+
+        it "is expired if test smd is negative" do
+          subject.expired?(1, -1).should eq true
+        end
+
+        it "is expired if test smd exceeds SmD range" do
+          subject.expired?(1, smd.range + 1).should eq true
+        end
+      end
+    end
+
+    context "is expired" do
 
       it "when token smd equals test smd" do
         subject.expired?(token_smd, token_smd).should eq true

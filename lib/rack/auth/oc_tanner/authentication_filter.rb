@@ -27,7 +27,8 @@ class Rack::Auth::OCTanner::AuthenticationFilter
   end
 
   def expired?(token_smd, expiration_smd = time_to_smd(Time.now))
-    return true if token_smd.nil?
+    return true if !valid_smd? token_smd
+    return true if !valid_smd? expiration_smd
 
     return false if token_smd > expiration_smd
 
@@ -47,5 +48,12 @@ class Rack::Auth::OCTanner::AuthenticationFilter
   # Returns the the given time in a SmD format.
   def time_to_smd time
     small_date.from(time.gmtime.to_i * 1000)
+  end
+
+  def valid_smd? smd
+    return false if smd.nil?
+    return false if smd < 0
+    return false if smd > small_date.range
+    true
   end
 end
