@@ -14,6 +14,8 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
   let(:response_ok){ { status: 200, body: token_info.to_json } }
   let(:response_unauthorized){ { status: 401 } }
 
+  let(:smd){ SmD::SmD.new }
+
   describe '#initialize' do
     it 'defaults to no scopes' do
       subject.instance_variable_get(:@required_scopes).should eq 0
@@ -112,7 +114,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
 
   describe "#authenticate_expires" do
     let(:token_smd){ 383 }
-    let(:token_time){ SmD::SmD.new.date token_smd}
+    let(:token_time){ smd.date token_smd }
 
     it "returns true if token has not expired" do
       subject.authenticate_expires(token_smd, token_time - 1).should eq true

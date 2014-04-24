@@ -32,7 +32,7 @@ class Rack::Auth::OCTanner::AuthenticationFilter
   # SmD range "boundary"; Tim will resolve those and we'll
   # implement here.
   def authenticate_expires(smd, current_time = Time.now.gmtime)
-    return true if small_date.date(smd) > current_time
+    return true if small_date.date(smd).gmtime > current_time.gmtime
     false
   end
 
