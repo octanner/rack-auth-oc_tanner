@@ -1,3 +1,5 @@
+require 'smd'
+
 class Rack::Auth::OCTanner::AuthenticationFilter
 
   def initialize(scopes = [])
@@ -41,6 +43,6 @@ class Rack::Auth::OCTanner::AuthenticationFilter
   end
 
   def small_date
-    @smd ||= Rack::Auth::OCTanner::SmD.new
+    @smd ||= SmD::SmD.new
   end
 end
