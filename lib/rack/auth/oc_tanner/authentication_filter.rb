@@ -28,11 +28,8 @@ class Rack::Auth::OCTanner::AuthenticationFilter
 
   # Uses SmD date from the token to determine if the token
   # has "expired".  See:  https://npmjs.org/package/smd
-  # NOTE: There are some issues when a token date is on the
-  # SmD range "boundary"; Tim will resolve those and we'll
-  # implement here.
-  def authenticate_expires(smd, current_time = Time.now.gmtime)
-    return true if small_date.date(smd).gmtime > current_time.gmtime
+  def authenticate_expires(smd, check_time = Time.now)
+    return true if smd > time_to_smd(check_time)
     false
   end
 
@@ -44,5 +41,10 @@ class Rack::Auth::OCTanner::AuthenticationFilter
 
   def small_date
     @smd ||= SmD::SmD.new
+  end
+
+  # Returns the the given time in a SmD format.
+  def time_to_smd time
+    small_date.from(time.gmtime.to_i * 1000)
   end
 end
