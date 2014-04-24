@@ -62,7 +62,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     it 'should return true if authentication succeeds' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new
       Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:authenticate_scopes).and_return(true)
-      Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:authenticate_expires).and_return(true)
+      Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:expired?).and_return(false)
       @request.env['octanner_auth_user'] = token_info
       subject.authenticate_request(@request).should be true
     end
@@ -70,7 +70,6 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     it 'tries to authenticate scopes' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new
       filter.should_receive(:authenticate_scopes).once
-      Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:authenticate_expires).and_return(true)
       @request.env['octanner_auth_user'] = token_info
       filter.authenticate_request(@request)
     end
@@ -78,7 +77,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     it 'tries to authenticate expiration' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new
       Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:authenticate_scopes).and_return(true)
-      filter.should_receive(:authenticate_expires).once
+      filter.should_receive(:expired?).once
       @request.env['octanner_auth_user'] = token_info
       filter.authenticate_request(@request)
     end
@@ -112,16 +111,27 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
   end
 
 
-  describe "#authenticate_expires" do
-    let(:token_smd){ 383 }
-    let(:token_time){ smd.date token_smd }
+  describe "#expired?" do
+    let(:token_smd){ 300 }
 
-    it "returns true if token has not expired" do
-      subject.authenticate_expires(token_smd, token_time - 1).should eq true
+    context "is expired" do
+      it "when no smd is given" do
+        subject.expired?(nil).should eq true
+      end
+
+      it "when token smd equals test smd" do
+        subject.expired?(token_smd, token_smd).should eq true
+      end
+
+      it "when token smd is less than test smd" do
+        subject.expired?(token_smd, token_smd + 1).should eq true
+      end
     end
 
-    it "returns false if token has expired" do
-      subject.authenticate_expires(token_smd, token_time + 1).should eq false
+    context "is not expired" do
+      it "when token smd is greater than test smd" do
+        subject.expired?(token_smd, token_smd - 1).should eq false
+      end
     end
   end
 end

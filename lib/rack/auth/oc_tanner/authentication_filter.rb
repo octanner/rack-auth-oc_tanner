@@ -19,18 +19,19 @@ class Rack::Auth::OCTanner::AuthenticationFilter
     token_data = request.env['octanner_auth_user']
     return false unless token_data
 
-    authenticate_scopes(token_data['s']) && authenticate_expires(token_data['e'])
+    authenticate_scopes(token_data['s']) && !expired?(token_data['e'])
   end
 
   def authenticate_scopes(scopes = 0)
     required_scopes & scopes == required_scopes
   end
 
-  # Uses SmD date from the token to determine if the token
-  # has "expired".  See:  https://npmjs.org/package/smd
-  def authenticate_expires(smd, check_time = Time.now)
-    return true if smd > time_to_smd(check_time)
-    false
+  def expired?(token_smd, expiration_smd = time_to_smd(Time.now))
+    return true if token_smd.nil?
+
+    return false if token_smd > expiration_smd
+
+    true
   end
 
   private
