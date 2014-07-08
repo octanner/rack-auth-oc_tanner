@@ -235,44 +235,5 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
         subject.expired?(unit_in_next_range, unit_in_range).should eq true
       end
     end
-
-
-
-
-    # context "when test smd is not near SmD rollover boundary" do
-    #   context "the token is expired" do
-    #     it "when token smd equals test smd" do
-    #       subject.expired?(token_smd, token_smd).should eq true
-    #     end
-
-    #     it "when token smd is less than test smd" do
-    #       subject.expired?(token_smd, token_smd + 1).should eq true
-    #     end
-    #   end
-
-    #   context "the token is not expired" do
-    #     it "when token smd is greater than test smd" do
-    #       subject.expired?(token_smd, token_smd - 1).should eq false
-    #     end
-    #   end
-    # end
-
-    # context "when test smd is near SmD rollover boundary" do
-    #   context "the token is expired" do
-    #     it "when token smd equals adjusted test smd" do
-    #       subject.expired?(token_smd, token_smd).should eq true
-    #     end
-
-    #     it "when token smd is less than adjusted test smd" do
-    #       subject.expired?(token_smd, token_smd + 1).should eq true
-    #     end
-    #   end
-
-    #   context "the token is not expired" do
-    #     it "when token smd is greater than adjusted test smd" do
-    #       subject.expired?(token_smd, token_smd - 1).should eq false
-    #     end
-    #   end
-    # end
   end
 end
