@@ -270,11 +270,11 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
           ).should eq false
         end
 
-        it "a year-long token after test is expired" do
+        it "a year-long token after test is not expired" do
           subject.expired?(
             ((smd.range - 1) + (365 * 24)) % smd.range,
             smd.range - 1
-          ).should eq true
+          ).should eq false
         end
 
         it "a year-and-a-day-long token after test is expired" do
