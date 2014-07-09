@@ -3,6 +3,7 @@ require 'smd'
 class Rack::Auth::OCTanner::AuthenticationFilter
 
   SMD_ROLLOVER_BUFFER_DAYS = 131  # Roughly until November 10th; adjust downward accordingly
+  SMD_ROLLOVER_MAXIMUM_DAYS = 365  # Some apps are using year-long tokens (not a good practice)
 
   def initialize(scopes = [])
     @required_scopes = Rack::Auth::OCTanner.scopes.scopes_to_int scopes
@@ -48,9 +49,13 @@ class Rack::Auth::OCTanner::AuthenticationFilter
     return true if !valid_smd? token_smd
     return true if !valid_smd? test_smd
 
-    return true if is_in_rollover_buffer?(token_smd) && test_smd <= ((token_smd + smd_rollover_buffer) % small_date.range)
+
     return false if token_smd > test_smd
-    return false if is_in_rollover_buffer?(test_smd) && token_smd <= ((test_smd + smd_rollover_buffer) % small_date.range)
+
+    # If the test_smd is in the rollover buffer, we'll accept tokens after the rollover up to the maximum
+    if is_in_rollover_buffer?(test_smd) && !is_in_rollover_buffer?(token_smd)
+      return false if token_smd <= ((test_smd + smd_rollover_maximum) % small_date.range)
+    end
 
     true
   end
@@ -59,7 +64,11 @@ class Rack::Auth::OCTanner::AuthenticationFilter
 
   # Returns the buffer accounting for SmD rollover handling, in SmD block format
   def smd_rollover_buffer
-    @smd_rollover_buffer ||= (SMD_ROLLOVER_BUFFER_DAYS * 24 * SmD::SmD::MS_PER_HOUR) / small_date.ms_per_unit
+    (SMD_ROLLOVER_BUFFER_DAYS * 24 * SmD::SmD::MS_PER_HOUR) / small_date.ms_per_unit
+  end
+
+  def smd_rollover_maximum
+    (SMD_ROLLOVER_MAXIMUM_DAYS * 24 * SmD::SmD::MS_PER_HOUR) / small_date.ms_per_unit
   end
 
   def required_scopes

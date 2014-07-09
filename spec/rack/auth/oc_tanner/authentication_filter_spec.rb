@@ -144,6 +144,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
       end
     end
 
+
     # The SmD design is based on ranges of units.  After the
     # last unit in a range, the range rolls-over to the first
     # unit in the same range.  This is unfortunate when doing
@@ -171,68 +172,117 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     # a years-old-token from being accepted, except in this limited period of time
     # where we can't really be sure it's invalid.
 
-    let(:unit_in_range){ smd.range / 2 }
-    let(:unit_on_buffer) { smd.range - subject.send(:smd_rollover_buffer) }
-    let(:unit_in_buffer){ smd.range - (subject.send(:smd_rollover_buffer) / 2) }
-    let(:unit_in_next_range){ 2 }
+    # November 10th, 2014 is a SmD rollover date for default configuration
+    let(:rollover_date){ Time.utc(2014, 11, 10) }
+    let(:rollover_smd){ smd.from (rollover_date.to_i * 1000) }
+    let(:rollover_buffer_start){ rollover_date - (Rack::Auth::OCTanner::AuthenticationFilter::SMD_ROLLOVER_BUFFER_DAYS * 24 * 60 * 60) }
+    let(:rollover_buffer_start_smd){ smd.from (rollover_buffer_start.to_i * 1000) }
 
-    context "when token time and test time are in main SmD range" do
-      it "a token after test is not expired" do
-        subject.expired?(unit_in_range + 1, unit_in_range).should eq false
+    describe "Token expiration validation" do
+      context "when test time & token time before rollover buffer start" do
+        it "a token after test is not expired" do
+          subject.expired?(
+            rollover_buffer_start_smd - 1,
+            rollover_buffer_start_smd - 2
+          ).should eq false
+        end
+
+        it "a token equal to test is expired" do
+          subject.expired?(
+            rollover_buffer_start_smd - 1,
+            rollover_buffer_start_smd - 1
+          ).should eq true
+        end
+
+        it "a token before test is expired" do
+          subject.expired?(
+            rollover_buffer_start_smd - 2,
+            rollover_buffer_start_smd - 1
+          ).should eq true
+        end
       end
 
-      it "a token equal to test is expired" do
-        subject.expired?(unit_in_range, unit_in_range).should eq true
+      context "when test time & token time straddle the rollover buffer start" do
+        it "a token after test is not expired" do
+          subject.expired?(
+            rollover_buffer_start_smd + 1,
+            rollover_buffer_start_smd - 1
+          ).should eq false
+        end
+
+        it "a token equal to test is expired" do
+          subject.expired?(
+            rollover_buffer_start_smd,
+            rollover_buffer_start_smd
+          ).should eq true
+        end
+
+        it "a token before test is expired" do
+          subject.expired?(
+            rollover_buffer_start_smd - 1,
+            rollover_buffer_start_smd + 1
+          ).should eq true
+        end
       end
 
-      it "a token before test is expired" do
-        subject.expired?(unit_in_range - 1, unit_in_range).should eq true
-      end
-    end
+      context "when test time & token time are within the rollover buffer start" do
+        it "a token after test is not expired" do
+          subject.expired?(
+            rollover_buffer_start_smd + 2,
+            rollover_buffer_start_smd + 1
+          ).should eq false
+        end
 
-    context "when token time and test time straddle start of rollover buffer" do
-      it "a token after test is not expired" do
-        subject.expired?(unit_on_buffer + 1, unit_on_buffer - 1).should eq false
-      end
+        it "a token equal to test is expired" do
+          subject.expired?(
+            rollover_buffer_start_smd + 1,
+            rollover_buffer_start_smd + 1
+          ).should eq true
+        end
 
-      it "a token equal to test is expired" do
-        subject.expired?(unit_on_buffer, unit_on_buffer).should eq true
-      end
-
-      it "a token before test is expired" do
-        subject.expired?(unit_on_buffer - 1, unit_on_buffer + 1).should eq true
-      end
-    end
-
-    context "when token time and test time are in rollover buffer" do
-      it "a token after test is not expired" do
-        subject.expired?(unit_in_buffer + 1, unit_in_buffer).should eq false
-      end
-
-      it "a token equal to test is expired" do
-        subject.expired?(unit_in_buffer, unit_in_buffer).should eq true
+        it "a token before test is expired" do
+          subject.expired?(
+            rollover_buffer_start_smd + 1,
+            rollover_buffer_start_smd + 2
+          ).should eq true
+        end
       end
 
-      it "a token before test is expired" do
-        subject.expired?(unit_in_buffer - 1, unit_in_buffer).should eq true
-      end
-    end
+      context "when test time & token time straddle the rollover" do
+        it "a token after test is not expired" do
+          subject.expired?(
+            1,
+            smd.range - 1
+          ).should eq false
+        end
 
-    context "when token time and test time straddle rollover range" do
-      it "a token after test is not expired" do
-        subject.expired?(unit_in_next_range, smd.range - 1).should eq false
-      end
+        it "a token equal to test is expired" do
+          subject.expired?(
+            0,
+            0
+          ).should eq true
+        end
 
-      it "a token equal to test is expired" do
-        subject.expired?(smd.range, smd.range).should eq true
-      end
+        it "a day-less-than-year-long token after test is not expired" do
+          subject.expired?(
+            ((smd.range - 2) + (365 * 24)) % smd.range,
+            smd.range - 1
+          ).should eq false
+        end
 
-      it "a token before test is expired" do
-        subject.expired?(smd.range - 1, unit_in_next_range).should eq true
-      end
+        it "a year-long token after test is not expired" do
+          subject.expired?(
+            ((smd.range - 1) + (365 * 24)) % smd.range,
+            smd.range - 1
+          ).should eq false
+        end
 
-      it "a token after a before-buffer test time that is expired" do
-        subject.expired?(unit_in_next_range, unit_in_range).should eq true
+        it "a year-and-a-day-long token after test is expired" do
+          subject.expired?(
+            ((smd.range - 1) + (365 * 24) + 1) % smd.range,
+            smd.range - 1
+          ).should eq true
+        end
       end
     end
   end
