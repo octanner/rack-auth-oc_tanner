@@ -145,19 +145,6 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     end
 
 
-    describe "using real-world example data" do
-
-
-
-
-
-      it "does stuff" do
-        puts rollover_date
-        puts rollover_buffer_start
-      end
-    end
-
-
     # The SmD design is based on ranges of units.  After the
     # last unit in a range, the range rolls-over to the first
     # unit in the same range.  This is unfortunate when doing
