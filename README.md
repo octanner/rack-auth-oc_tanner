@@ -80,4 +80,6 @@ not met, the filter will return 401.
 For information on how to use these to obtain a token see:
 https://github.com/octanner/perf_auth_client.rb
 
-`
+## License
+
+MIT http://opensource.org/licenses/MIT
