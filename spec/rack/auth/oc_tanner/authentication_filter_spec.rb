@@ -6,7 +6,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
   let(:scope_list){ Rack::Auth::OCTanner::ScopeList.new scope_string }
 
   before :each do
-    Rack::Auth::OCTanner.stub(:scopes).and_return{ scope_list }
+    allow(Rack::Auth::OCTanner).to receive(:scopes).and_return(scope_list)
   end
 
   let(:token_info) { { "c" => "eve", "u" => "my-user", "e" => 383, "s" => "\xA0\x88" } }
