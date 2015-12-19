@@ -20,16 +20,16 @@ describe Rack::Auth::OCTanner::Token do
 
   describe '#initialize' do
     it 'assigns the app variable' do
-      subject.instance_variable_get( :@app ).should eq app
+      expect(subject.instance_variable_get( :@app )).to eq app
     end
 
     it 'creates a new logger by default' do
       middleware = Rack::Auth::OCTanner::Token.new app, key: "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
-      middleware.instance_variable_get(:@logger).should be_a(::Logger)
+      expect(middleware.instance_variable_get(:@logger)).to be_a(::Logger)
     end
 
     it 'assigns the options variable' do
-      subject.instance_variable_get( :@options ).should eq options
+      expect(subject.instance_variable_get( :@options )).to eq options
     end
   end
 
@@ -37,17 +37,17 @@ describe Rack::Auth::OCTanner::Token do
     it "always returns true if ENV token set by time of first call" do
       ENV['OCTANNER_AUTH_TOKEN'] = "any_thing_not_nil"
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.token_overridden?.should eq true
+      expect(subject.token_overridden?).to eq true
       ENV['OCTANNER_AUTH_TOKEN'] = nil
-      subject.token_overridden?.should eq true
+      expect(subject.token_overridden?).to eq true
     end
 
     it "always returns false if ENV token unset by time of first call" do
       ENV['OCTANNER_AUTH_TOKEN'] = nil
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.token_overridden?.should eq false
+      expect(subject.token_overridden?).to eq false
       ENV['OCTANNER_AUTH_TOKEN'] = "any_thing_not_nil"
-      subject.token_overridden?.should eq false
+      expect(subject.token_overridden?).to eq false
     end
   end
 
@@ -61,92 +61,92 @@ describe Rack::Auth::OCTanner::Token do
 
     it 'should set env objects if authentication succeeds' do
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.should_receive(:decode_token).with(token).and_return(token_info)
+      expect(subject).to receive(:decode_token).with(token).and_return(token_info)
       response = subject.call(env)
-      response[1]['octanner_auth_user'].should eq token_info
+      expect(response[1]['octanner_auth_user']).to eq token_info
     end
 
     it 'should set the token in the request env' do
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       response = subject.call(env)
-      response[1]['octanner_auth_user']['token'].should eq token
+      expect(response[1]['octanner_auth_user']['token']).to eq token
     end
 
     it "should set use the token in the ENV if set" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.should_receive(:decode_token).with("the token")
+      expect(subject).to receive(:decode_token).with("the token")
       response = subject.call(env)
     end
 
     it "should set the ENV with token if not initially set" do
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
       response = subject.call(env)
-      ENV['OCTANNER_AUTH_TOKEN'].should eq token
+      expect(ENV['OCTANNER_AUTH_TOKEN']).to eq token
     end
 
     it 'should set env objects to nil if authentication fails' do
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.should_receive(:decode_token).with(token).and_return(nil)
+      expect(subject).to receive(:decode_token).with(token).and_return(nil)
       response = subject.call(env)
-      response[1]['octanner_auth_user'].should be_nil
+      expect(response[1]['octanner_auth_user']).to be_nil
     end
 
     it "should use headers over parameters for the auth token" do
-      subject.should_receive(:token_from_headers).once.and_return(token)
-      subject.should_not_receive(:token_from_params)
-      subject.should_receive(:decode_token).with(token).and_return(nil)
+      expect(subject).to receive(:token_from_headers).once.and_return(token)
+      expect(subject).to_not receive(:token_from_params)
+      expect(subject).to receive(:decode_token).with(token).and_return(nil)
       subject.call(make_env)
     end
 
     it "should use the access_token parameter if no http headers present" do
-      subject.should_receive(:token_from_headers).once.and_return(nil)
-      subject.should_receive(:token_from_params).once.and_return(token)
-      subject.should_receive(:decode_token).with(token).and_return(nil)
+      expect(subject).to receive(:token_from_headers).once.and_return(nil)
+      expect(subject).to receive(:token_from_params).once.and_return(token)
+      expect(subject).to receive(:decode_token).with(token).and_return(nil)
       subject.call(make_env)
     end
 
     it "should return nil if both token_from_headers and token_from_params are nils" do
-      subject.should_receive(:token_from_headers).once.and_return(nil)
-      subject.should_receive(:decode_token).with(nil).and_return(nil)
+      expect(subject).to receive(:token_from_headers).once.and_return(nil)
+      expect(subject).to receive(:decode_token).with(nil).and_return(nil)
       response = subject.call(make_env)
-      response[1]['octanner_auth_user'].should be_nil
+      expect(response[1]['octanner_auth_user']).to be_nil
     end
 
     it "should return nil if token_from_headers is empty" do
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer "
-      subject.should_receive(:token_from_headers).once.and_return('')
-      subject.should_receive(:decode_token).with('').and_return(nil)
+      expect(subject).to receive(:token_from_headers).once.and_return('')
+      expect(subject).to receive(:decode_token).with('').and_return(nil)
       response = subject.call(env)
-      response[1]['octanner_auth_user'].should be_nil
+      expect(response[1]['octanner_auth_user']).to be_nil
     end
 
     it "should return nil if token_from_headers is empty" do
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.should_receive(:decode_token).with(token).and_raise(StandardError)
+      expect(subject).to receive(:decode_token).with(token).and_raise(StandardError)
       response = subject.call(env)
-      response[1]['octanner_auth_user'].should be_nil
+      expect(response[1]['octanner_auth_user']).to be_nil
     end
 
     # Deprecated; we're moving to 'Bearer' headers
     it "should support for 'Token token=' headers" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
       env = make_env 'HTTP_AUTHORIZATION' => "Token token=#{token}"
-      subject.should_receive(:decode_token).with("the token")
+      expect(subject).to receive(:decode_token).with("the token")
       response = subject.call(env)
     end
 
     it "should support for 'Bearer token=' headers" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer token=#{token}"
-      subject.should_receive(:decode_token).with("the token")
+      expect(subject).to receive(:decode_token).with("the token")
       response = subject.call(env)
     end
 
     it "should support for 'Bearer' headers" do
       ENV['OCTANNER_AUTH_TOKEN'] = "the token"
       env = make_env 'HTTP_AUTHORIZATION' => "Bearer #{token}"
-      subject.should_receive(:decode_token).with("the token")
+      expect(subject).to receive(:decode_token).with("the token")
       response = subject.call(env)
     end
 
@@ -161,11 +161,11 @@ describe Rack::Auth::OCTanner::Token do
 
     it 'returns an object if matches access_token' do
       decoded_token = token_info.merge({"token" => token, "s" => Rack::Auth::OCTanner::ScopeList.bytes_to_int(token_info['s'])})
-      subject.decode_token(token).should eq decoded_token
+      expect(subject.decode_token(token)).to eq decoded_token
     end
 
     it 'returns nil if nothing matches' do
-      subject.decode_token('bad1234').should eq nil
+      expect(subject.decode_token('bad1234')).to eq nil
     end
 
     # Real-world example as an integration test
@@ -177,7 +177,7 @@ describe Rack::Auth::OCTanner::Token do
       subject { Rack::Auth::OCTanner::Token.new app, options }
 
       it 'returns the expected hash data' do
-        subject.decode_token(token).should eq data.merge({"token" => token})
+        expect(subject.decode_token(token)).to eq data.merge({"token" => token})
       end
     end
   end

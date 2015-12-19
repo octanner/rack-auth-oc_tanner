@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name = 'rack-auth-oc_tanner'
-  gem.version = '1.0.3'
+  gem.version = '1.0.4'
 
   gem.authors = ['Jay Wagnon']
   gem.email = ['jay.wagnon@octanner.com']
@@ -17,6 +17,6 @@ Gem::Specification.new do |gem|
   gem.test_files = Dir.glob("spec/**/*")
 
   gem.add_dependency 'rack'
-  gem.add_dependency 'simple-secrets', '~> 1.0.0'
-  gem.add_dependency 'smd', '~> 1.0.0'
+  gem.add_dependency 'simple-secrets', '~> 1.0'
+  gem.add_dependency 'smd', '~> 1.1'
 end

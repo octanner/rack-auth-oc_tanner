@@ -10,58 +10,58 @@ describe Rack::Auth::OCTanner::ScopeList do
     it 'converts the scope bytes to an integer' do
       bytes = "\xA0\x88"
       i = Rack::Auth::OCTanner::ScopeList.bytes_to_int bytes
-      i.should eq 0b1010000010001000
-      i.to_s(2).should eq bytes.unpack('B*').first
+      expect(i).to eq 0b1010000010001000
+      expect(i.to_s(2)).to eq bytes.unpack('B*').first
     end
   end
 
   describe '#size' do
     it 'returns the number of scopes loaded' do
-      scope_list.size.should eq 7
+      expect(scope_list.size).to eq 7
     end
   end
 
   describe'#scope_at' do
     it 'returns the scope for the given ordinal' do
-      scope_list.scope_at(4).should eq 'user.write'
+      expect(scope_list.scope_at(4)).to eq 'user.write'
     end
 
     it 'returns nil if the ordinal is out of range' do
-      scope_list.scope_at(999).should be_nil
+      expect(scope_list.scope_at(999)).to be_nil
     end
   end
 
   describe'#has_scope?' do
     it 'returns true if it has the scope' do
-      scope_list.has_scope?('user.delete').should be_true
+      expect(scope_list.has_scope?('user.delete')).to eq true
     end
 
     it 'returns false if it does not have the scope' do
-      scope_list.has_scope?('foo.bar').should be_false
+      expect(scope_list.has_scope?('foo.bar')).to eq false
     end
   end
 
   describe '#index_of' do
     it 'returns the ordinal for the given scope' do
-      scope_list.index_of('user.write').should eq 4
+      expect(scope_list.index_of('user.write')).to eq 4
     end
 
     it 'returns nil if it does not have the scope' do
-      scope_list.index_of('foo.bar').should be_false
+      expect(scope_list.index_of('foo.bar')).to eq nil
     end
   end
 
   describe '#scopes_to_int' do
     it 'returns an left-to-right bitwise ordinal sum for the given scopes' do
-      scope_list.scopes_to_int(['public', 'user.write', 'admin.read']).should eq 0b1010100
+      expect(scope_list.scopes_to_int(['public', 'user.write', 'admin.read'])).to eq 0b1010100
     end
 
     it 'returns zero if no scopes given' do
-      scope_list.scopes_to_int([]).should eq 0
+      expect(scope_list.scopes_to_int([])).to eq 0
     end
 
     it 'returns zero if nil scopes given' do
-      scope_list.scopes_to_int(nil).should eq 0
+      expect(scope_list.scopes_to_int(nil)).to eq 0
     end
 
     it 'raises error if a given scope does not exist' do

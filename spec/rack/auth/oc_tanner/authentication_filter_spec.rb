@@ -6,7 +6,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
   let(:scope_list){ Rack::Auth::OCTanner::ScopeList.new scope_string }
 
   before :each do
-    Rack::Auth::OCTanner.stub(:scopes).and_return{ scope_list }
+    allow(Rack::Auth::OCTanner).to receive(:scopes).and_return(scope_list)
   end
 
   let(:token_info) { { "c" => "eve", "u" => "my-user", "e" => 383, "s" => "\xA0\x88" } }
@@ -18,22 +18,22 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
 
   describe '#initialize' do
     it 'defaults to no scopes' do
-      subject.instance_variable_get(:@required_scopes).should eq 0
+      expect(subject.instance_variable_get(:@required_scopes)).to eq 0
     end
 
     it 'accepts nil for no scopes' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new nil
-      filter.instance_variable_get(:@required_scopes).should eq 0
+      expect(filter.instance_variable_get(:@required_scopes)).to eq 0
     end
 
     it 'accepts an array of scope values' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new [ "public", "user.write", "admin.read" ]
-      filter.instance_variable_get(:@required_scopes).should eq 0b1010100
+      expect(filter.instance_variable_get(:@required_scopes)).to eq 0b1010100
     end
 
     it 'accepts an empty array' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new []
-      filter.instance_variable_get(:@required_scopes).should eq 0
+      expect(filter.instance_variable_get(:@required_scopes)).to eq 0
     end
 
     it 'raises an error if a required scope is not defined in the global list' do
@@ -45,7 +45,7 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
   describe '#before' do
     it 'calls controller.head(401) when authentication fails' do
       controller = double('controller', request: nil)
-      controller.should_receive(:head).with(401)
+      expect(controller).to receive(:head).with(401)
       subject.before(controller)
     end
   end
@@ -61,34 +61,34 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
 
     it 'should return true if authentication succeeds' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new
-      Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:authenticate_scopes).and_return(true)
-      Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:expired?).and_return(false)
+      allow_any_instance_of(Rack::Auth::OCTanner::AuthenticationFilter).to receive(:authenticate_scopes).and_return(true)
+      allow_any_instance_of(Rack::Auth::OCTanner::AuthenticationFilter).to receive(:expired?).and_return(false)
       @request.env['octanner_auth_user'] = token_info
-      subject.authenticate_request(@request).should be true
+      expect(subject.authenticate_request(@request)).to be true
     end
 
     it 'tries to authenticate scopes' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new
-      filter.should_receive(:authenticate_scopes).once
+      expect(filter).to receive(:authenticate_scopes).once
       @request.env['octanner_auth_user'] = token_info
       filter.authenticate_request(@request)
     end
 
     it 'tries to authenticate expiration' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new
-      Rack::Auth::OCTanner::AuthenticationFilter.any_instance.stub(:authenticate_scopes).and_return(true)
-      filter.should_receive(:expired?).once
+      allow_any_instance_of(Rack::Auth::OCTanner::AuthenticationFilter).to receive(:authenticate_scopes).and_return(true)
+      expect(filter).to receive(:expired?).once
       @request.env['octanner_auth_user'] = token_info
       filter.authenticate_request(@request)
     end
 
     context 'authentication failures' do
       it 'should return false if no request' do
-        subject.authenticate_request(nil).should be false
+        expect(subject.authenticate_request(nil)).to be false
       end
 
       it 'should return false if no token data' do
-        subject.authenticate_request(@request).should be false
+        expect(subject.authenticate_request(@request)).to be false
       end
     end
   end
@@ -96,17 +96,17 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
 
   describe '#authenticate_scopes' do
     it 'returns true if no scopes are required' do
-      subject.authenticate_scopes(0b1010100).should eq true
+      expect(subject.authenticate_scopes(0b1010100)).to eq true
     end
 
     it 'returns true if all required scopes are included' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new [ "public", "user.write", "admin.read" ]
-      filter.authenticate_scopes(0b1010100).should eq true
+      expect(filter.authenticate_scopes(0b1010100)).to eq true
     end
 
     it 'returns false if only some required scopes are included' do
       filter = Rack::Auth::OCTanner::AuthenticationFilter.new [ "public", "user.write", "admin.read" ]
-      filter.authenticate_scopes(0b1000000).should eq false
+      expect(filter.authenticate_scopes(0b1000000)).to eq false
     end
   end
 
@@ -117,29 +117,29 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     context "invalid inputs" do
       context "smd is nil" do
         it "is expired if token smd is nil" do
-          subject.expired?(nil).should eq true
+          expect(subject.expired?(nil)).to eq true
         end
 
         it "is expired if test smd is nil" do
-          subject.expired?(1, nil).should eq true
+          expect(subject.expired?(1, nil)).to eq true
         end
       end
 
       context "smd is out of range" do
         it "is expired if token smd is negative" do
-          subject.expired?(-1).should eq true
+          expect(subject.expired?(-1)).to eq true
         end
 
         it "is expired if token smd exceeds SmD range" do
-          subject.expired?(smd.range + 1).should eq true
+          expect(subject.expired?(smd.range + 1)).to eq true
         end
 
         it "is expired if test smd is negative" do
-          subject.expired?(1, -1).should eq true
+          expect(subject.expired?(1, -1)).to eq true
         end
 
         it "is expired if test smd exceeds SmD range" do
-          subject.expired?(1, smd.range + 1).should eq true
+          expect(subject.expired?(1, smd.range + 1)).to eq true
         end
       end
     end
@@ -181,107 +181,107 @@ describe Rack::Auth::OCTanner::AuthenticationFilter do
     describe "Token expiration validation" do
       context "when test time & token time before rollover buffer start" do
         it "a token after test is not expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd - 1,
             rollover_buffer_start_smd - 2
-          ).should eq false
+          )).to eq false
         end
 
         it "a token equal to test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd - 1,
             rollover_buffer_start_smd - 1
-          ).should eq true
+          )).to eq true
         end
 
         it "a token before test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd - 2,
             rollover_buffer_start_smd - 1
-          ).should eq true
+          )).to eq true
         end
       end
 
       context "when test time & token time straddle the rollover buffer start" do
         it "a token after test is not expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd + 1,
             rollover_buffer_start_smd - 1
-          ).should eq false
+          )).to eq false
         end
 
         it "a token equal to test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd,
             rollover_buffer_start_smd
-          ).should eq true
+          )).to eq true
         end
 
         it "a token before test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd - 1,
             rollover_buffer_start_smd + 1
-          ).should eq true
+          )).to eq true
         end
       end
 
       context "when test time & token time are within the rollover buffer start" do
         it "a token after test is not expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd + 2,
             rollover_buffer_start_smd + 1
-          ).should eq false
+          )).to eq false
         end
 
         it "a token equal to test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd + 1,
             rollover_buffer_start_smd + 1
-          ).should eq true
+          )).to eq true
         end
 
         it "a token before test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             rollover_buffer_start_smd + 1,
             rollover_buffer_start_smd + 2
-          ).should eq true
+          )).to eq true
         end
       end
 
       context "when test time & token time straddle the rollover" do
         it "a token after test is not expired" do
-          subject.expired?(
+          expect(subject.expired?(
             1,
             smd.range - 1
-          ).should eq false
+          )).to eq false
         end
 
         it "a token equal to test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             0,
             0
-          ).should eq true
+          )).to eq true
         end
 
         it "a day-less-than-year-long token after test is not expired" do
-          subject.expired?(
+          expect(subject.expired?(
             ((smd.range - 2) + (365 * 24)) % smd.range,
             smd.range - 1
-          ).should eq false
+          )).to eq false
         end
 
         it "a year-long token after test is not expired" do
-          subject.expired?(
+          expect(subject.expired?(
             ((smd.range - 1) + (365 * 24)) % smd.range,
             smd.range - 1
-          ).should eq false
+          )).to eq false
         end
 
         it "a year-and-a-day-long token after test is expired" do
-          subject.expired?(
+          expect(subject.expired?(
             ((smd.range - 1) + (365 * 24) + 1) % smd.range,
             smd.range - 1
-          ).should eq true
+          )).to eq true
         end
       end
     end
