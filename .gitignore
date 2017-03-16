@@ -17,3 +17,5 @@ tmp/
 .idea/
 *.iml
 *.ipr
+
+.ruby-version
