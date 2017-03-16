@@ -1,9 +1,0 @@
-source 'https://rubygems.org'
-
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.0.0.rc2'
-
-gem 'rails-api'
-
-# Handles O.C. Tanner authentication tokens
-gem 'rack-auth-oc_tanner', git: 'https://github.com/octanner/rack-auth-oc_tanner.git'
