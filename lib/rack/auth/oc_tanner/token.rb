@@ -43,12 +43,16 @@ class Rack::Auth::OCTanner::Token
     if token_overridden?
       token = ENV['OCTANNER_AUTH_TOKEN']
     else
-      token = ENV['OCTANNER_AUTH_TOKEN'] = token_from_headers || token_from_params
+      token = ENV['OCTANNER_AUTH_TOKEN'] = token_from_headers || token_from_params || token_from_cookies
     end
   end
 
   def request
     request ||= Rack::Request.new @env  # todo is 'request' a local variable here? why?
+  end
+
+  def token_from_cookies
+    return request.cookies['_access_token']
   end
 
   def token_from_params

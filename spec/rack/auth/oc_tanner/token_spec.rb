@@ -106,6 +106,14 @@ describe Rack::Auth::OCTanner::Token do
       subject.call(make_env)
     end
 
+    it "should use the _access_token cookie if no parameter or no http headers present" do
+      expect(subject).to receive(:token_from_headers).once.and_return(nil)
+      expect(subject).to receive(:token_from_params).once.and_return(nil)
+      expect(subject).to receive(:token_from_cookies).once.and_return(token)
+      expect(subject).to receive(:decode_token).with(token).and_return(nil)
+      subject.call(make_env)
+    end
+
     it "should return nil if both token_from_headers and token_from_params are nils" do
       expect(subject).to receive(:token_from_headers).once.and_return(nil)
       expect(subject).to receive(:decode_token).with(nil).and_return(nil)
