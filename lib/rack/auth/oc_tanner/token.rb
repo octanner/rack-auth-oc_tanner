@@ -52,7 +52,7 @@ class Rack::Auth::OCTanner::Token
   end
 
   def token_from_cookies
-    return request.cookies['_access_token']
+    return request.cookies['_access_token'] || request.cookies['_bearer_token']
   end
 
   def token_from_params
