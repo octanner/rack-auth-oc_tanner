@@ -1,5 +1,7 @@
 # rack-auth-oc_tanner
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dba2856c3ac449289764bbc17240735f)](https://www.codacy.com/app/jaywagnon/rack-auth-oc_tanner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=octanner/rack-auth-oc_tanner&amp;utm_campaign=Badge_Grade)
+
 Rack middleware for handling OC Tanner OAuth2 tokens.
 
 ## Getting Started
