@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rack-auth-oc_tanner (2.0.0)
+    rack-auth-oc_tanner (2.0.1)
       rack (>= 2.0.6)
       simple-secrets (~> 2.0)
       smd (~> 1.1)
