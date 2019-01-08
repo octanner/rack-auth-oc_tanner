@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
 
   gem.test_files = Dir.glob("spec/**/*")
 
-  gem.add_dependency 'rack'
+  gem.add_dependency 'rack', '>= 2.0.6'
   gem.add_dependency 'simple-secrets', '~> 2.0'
   gem.add_dependency 'smd', '~> 1.1'
 end
