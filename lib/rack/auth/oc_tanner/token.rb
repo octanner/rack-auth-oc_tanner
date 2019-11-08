@@ -39,11 +39,11 @@ class Rack::Auth::OCTanner::Token
 
   def auth_token_data(token)
     user_info =
-        if jwt_token?(token)
-          decode_core_auth_token token
-        else
-          decode_token token
-        end
+      if jwt_token?(token)
+        decode_core_auth_token token
+      else
+        decode_token token
+      end
 
     user_info
   end
@@ -52,6 +52,7 @@ class Rack::Auth::OCTanner::Token
     return nil if token.nil? || token.empty?
 
     data = packet.unpack(token)
+    data['s'] = Rack::Auth::OCTanner::ScopeList.bytes_to_int data['s'] if data
     data['token'] = token if data
     data
   end
@@ -98,8 +99,8 @@ class Rack::Auth::OCTanner::Token
   # 'Token token=' and 'Bearer token=' are deprecated; ; we're moving to just Bearer tokens
   def token_from_headers
     request.env['HTTP_AUTHORIZATION'] &&
-        !request.env['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
-        request.env['HTTP_AUTHORIZATION'][/^(Bearer|Token) (token=)?([^\s]*)$/, 3]
+      !request.env['HTTP_AUTHORIZATION'][/(oauth_version='1.0')/] &&
+      request.env['HTTP_AUTHORIZATION'][/^(Bearer|Token) (token=)?([^\s]*)$/, 3]
   end
 
   def packet
