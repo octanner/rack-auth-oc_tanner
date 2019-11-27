@@ -1,18 +1,13 @@
-require 'json'
-require 'jwt'
 require 'logger'
-require 'net/http'
-
 
 class Rack::Auth::OCTanner::Token
   def initialize(app, options = {})
-
     @logger =
-        if ENV['RACK_AUTH_OCTANNER_DEBUG'] || !options[:log]
-          ::Logger.new(STDERR)
-        else
-          options[:log]
-        end
+      if ENV['RACK_AUTH_OCTANNER_DEBUG'] || !options[:log]
+        ::Logger.new(STDERR)
+      else
+        options[:log]
+      end
     @app = app
     @options = options
   end
@@ -110,9 +105,9 @@ class Rack::Auth::OCTanner::Token
   def decode_jwt_token(token)
 
     verify_options = {
-        algorithm: 'RS256',
-        verify_iat: true,
-        jwks: jwks
+      algorithm: 'RS256',
+      verify_iat: true,
+      jwks: jwks
     }
 
     JWT.decode(token, nil, true, verify_options)
