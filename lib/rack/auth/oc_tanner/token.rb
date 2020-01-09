@@ -33,6 +33,8 @@ class Rack::Auth::OCTanner::Token
   end
 
   def auth_token_data(token)
+    return nil if token.nil? || token.empty?
+
     user_info =
       if jwt_token?(token)
         decode_core_auth_token token
