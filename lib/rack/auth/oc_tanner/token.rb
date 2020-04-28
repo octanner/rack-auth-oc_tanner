@@ -99,9 +99,10 @@ class Rack::Auth::OCTanner::Token
     if parent_activities['id'] == 'ADMIN_HOME'
       if parent_activities.count > 0
         children_activities = parent_activities['children']
-        children_activities.select { |activity|
+        group_deposit_activities = children_activities.select do |activity|
           activity[:id] == 'ADMIN_GROUP_DEPOSITS'
-        }.count > 0
+        end
+        group_deposit_activities.count > 0
       else
         false
       end
@@ -176,11 +177,11 @@ class Rack::Auth::OCTanner::Token
 
   def validate_admin_token(uri, token)
 
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true if uri.scheme == 'https'
+    http_req = Net::HTTP.new(uri.host, uri.port)
+    http_req.use_ssl = true if uri.scheme == 'https'
     req = Net::HTTP::Get.new uri
     req['Authorization'] = 'Bearer ' + token
-    http.start { |http| http.request req }
+    http_req.start { |http| http.request req }
   end
 
   def jwt_token?(token)
