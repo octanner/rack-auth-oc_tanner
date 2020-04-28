@@ -97,7 +97,7 @@ class Rack::Auth::OCTanner::Token
   # validate if decode response contains 'ADMIN_HOME' & 'ADMIN_GROUP_DEPOSITS'
   def validate_admin_auth_response(parent_activities)
     if parent_activities['id'] == 'ADMIN_HOME'
-      if parent_activities.count
+      if parent_activities.count > 0
         children_activites = parent_activities['children']
         children_activites.select { |activity|
           activity[:id] == 'ADMIN_GROUP_DEPOSITS'
