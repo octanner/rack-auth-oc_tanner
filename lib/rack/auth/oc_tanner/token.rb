@@ -35,16 +35,21 @@ class Rack::Auth::OCTanner::Token
   def auth_token_data(token)
     return nil if token.nil? || token.empty?
 
-    user_info =
-      if jwt_token?(token)
+    # if its JWT token then check for core authentication
+    # if core authentication is not success then check for admin authentication
+    # if its not JWT token check for user authentication
+    if jwt_token?(token)
+      begin
         decode_core_auth_token token
-      else
-        decode_token token
+      rescue Exception => e
+        decode_admin_auth_token token
       end
-
-    user_info
+    else
+      decode_token token
+    end
   end
 
+  # For user authentication
   def decode_token(token)
     return nil if token.nil? || token.empty?
 
@@ -54,6 +59,7 @@ class Rack::Auth::OCTanner::Token
     data
   end
 
+  # For core auth authentication
   def decode_core_auth_token(token)
     return nil if token.nil? || token.empty?
 
@@ -68,7 +74,41 @@ class Rack::Auth::OCTanner::Token
     data
   end
 
+  # For admin auth authentication
+  def decode_admin_auth_token(token)
+    return nil if token.nil? || token.empty?
+
+    data = decode_jwt_admin_token(token)
+
+    if data
+      activities = data['activities'].first
+
+      if validate_admin_auth_response activities
+        data['authToken'] = token
+        data['u'] = data['systemUserId']
+      end
+    end
+
+    data
+  end
+
   private
+
+  # validate if decode response contains 'ADMIN_HOME' & 'ADMIN_GROUP_DEPOSITS'
+  def validate_admin_auth_response(parent_activities)
+    if parent_activities['id'] == 'ADMIN_HOME'
+      if parent_activities.length.positive?
+        children_activites = parent_activities['children']
+        children_activites.select { |activity|
+          activity[:id] == 'ADMIN_GROUP_DEPOSITS'
+        }.length.positive?
+      else
+        false
+      end
+    else
+      false
+    end
+  end
 
   def token
     if token_overridden?
@@ -115,9 +155,34 @@ class Rack::Auth::OCTanner::Token
     JWT.decode(token, nil, true, verify_options)
   end
 
+  def decode_jwt_admin_token(token)
+    admin_url = if ENV.fetch('ADMIN_AUTH_URL').nil?
+                 'https://vision.appreciatehub.com/api/auth/validate'
+               else
+                 ENV.fetch('ADMIN_AUTH_URL')
+               end
+
+    req = validate_admin_token(admin_url, token)
+
+    response = http.start { |http| http.request req }
+
+    if response.code >= '200' && response.code <= '204'
+      JSON.parse(response.body).with_indifferent_access
+    end
+  end
+
   def jwks
     response = Net::HTTP.get_response(URI(ENV.fetch('CORE_JWKS_URL')))
     JSON.parse(response.body).with_indifferent_access
+  end
+
+  def validate_admin_token(uri, token)
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true if uri.scheme == 'https'
+    request = Net::HTTP::Get.new uri
+    request['Authorization'] = 'Bearer ' + token
+    request
   end
 
   def jwt_token?(token)
