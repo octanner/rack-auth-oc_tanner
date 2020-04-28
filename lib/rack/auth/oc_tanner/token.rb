@@ -98,10 +98,10 @@ class Rack::Auth::OCTanner::Token
   def validate_admin_auth_response(parent_activities)
     if parent_activities['id'] == 'ADMIN_HOME'
       if parent_activities.count > 0
-        children_activites = parent_activities['children']
-        children_activites.select { |activity|
+        children_activities = parent_activities['children']
+        children_activities.select { |activity|
           activity[:id] == 'ADMIN_GROUP_DEPOSITS'
-        }.length.positive?
+        }.count > 0
       else
         false
       end
@@ -157,14 +157,12 @@ class Rack::Auth::OCTanner::Token
 
   def decode_jwt_admin_token(token)
     admin_url = if ENV.fetch('ADMIN_AUTH_URL').nil?
-                 'https://vision.appreciatehub.com/api/auth/validate'
+                  URI('https://vision.appreciatehub.com/api/auth/validate')
                else
-                 ENV.fetch('ADMIN_AUTH_URL')
+                 URI(ENV.fetch('ADMIN_AUTH_URL'))
                end
 
-    req = validate_admin_token(admin_url, token)
-
-    response = http.start { |http| http.request req }
+    response = validate_admin_token(admin_url, token)
 
     if response.code >= '200' && response.code <= '204'
       JSON.parse(response.body).with_indifferent_access
@@ -180,9 +178,9 @@ class Rack::Auth::OCTanner::Token
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true if uri.scheme == 'https'
-    request = Net::HTTP::Get.new uri
-    request['Authorization'] = 'Bearer ' + token
-    request
+    req = Net::HTTP::Get.new uri
+    req['Authorization'] = 'Bearer ' + token
+    http.start { |http| http.request req }
   end
 
   def jwt_token?(token)
