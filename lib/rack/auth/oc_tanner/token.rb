@@ -84,7 +84,10 @@ class Rack::Auth::OCTanner::Token
       activities = data['activities'].first
 
       if validate_admin_auth_response activities
-        data['authToken'] = token
+        # For validation we are using admin auth token since we have to call
+        # other apis also in initiatives api flow
+        # setting user auth token once its decoded successfully
+        data['token'] = data['authToken']
         data['u'] = data['systemUserId']
       end
     end
